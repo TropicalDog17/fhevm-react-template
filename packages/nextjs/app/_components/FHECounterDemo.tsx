@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { useFhevm } from "@fhevm-sdk";
+import { useMemo, useState } from "react";
+import { useFhevm, FHEDecryptButton, useInMemoryStorage } from "@fhevm-sdk";
 import { useAccount } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/helper/RainbowKitCustomConnectButton";
 import { useFHECounterWagmi } from "~~/hooks/fhecounter-example/useFHECounterWagmi";
@@ -53,6 +53,16 @@ export const FHECounterDemo = () => {
     instance: fhevmInstance,
     initialMockChains,
   });
+
+  const { storage } = useInMemoryStorage();
+  const [localClear, setLocalClear] = useState<string | bigint | boolean | undefined>(undefined);
+
+  const decryptRequests = useMemo(() => {
+    if (!fheCounter.handle || !fheCounter.contractAddress) return undefined;
+    return [
+      { handle: fheCounter.handle, contractAddress: fheCounter.contractAddress as `0x${string}` },
+    ] as const;
+  }, [fheCounter.handle, fheCounter.contractAddress]);
 
   //////////////////////////////////////////////////////////////////////////////
   // UI Stuff:
@@ -122,25 +132,44 @@ export const FHECounterDemo = () => {
         <h3 className={titleClass}>🔢 Count Handle</h3>
         <div className="space-y-3 space-x-3">
           {printProperty("Encrypted Handle", fheCounter.handle || "No handle available")}
-          {printProperty("Decrypted Value", fheCounter.isDecrypted ? fheCounter.clear : "Not decrypted yet")}
+          {printProperty(
+            "Decrypted Value",
+            typeof localClear !== "undefined"
+              ? localClear
+              : fheCounter.isDecrypted
+              ? fheCounter.clear
+              : "Not decrypted yet",
+          )}
         </div>
       </div>
 
       {/* Action Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-black">
-        <button
-          className={fheCounter.isDecrypted ? successButtonClass : primaryButtonClass}
-          disabled={!fheCounter.canDecrypt}
-          onClick={fheCounter.decryptCountHandle}
-        >
-          {fheCounter.canDecrypt
-            ? "🔓 Decrypt Counter"
-            : fheCounter.isDecrypted
-              ? `✅ Decrypted: ${fheCounter.clear}`
-              : fheCounter.isDecrypting
+        <FHEDecryptButton
+          instance={fhevmInstance}
+          signer={fheCounter.ethersSigner as any}
+          storage={storage}
+          requests={decryptRequests}
+          onResults={res => {
+            const h = fheCounter.handle as string | undefined;
+            if (h && typeof res[h] !== "undefined") setLocalClear(res[h]);
+          }}
+          render={({ disabled, onClick, isDecrypting }) => (
+            <button
+              className={typeof localClear !== "undefined" ? successButtonClass : primaryButtonClass}
+              disabled={disabled}
+              onClick={onClick}
+            >
+              {disabled && !isDecrypting
+                ? "❌ Nothing to decrypt"
+                : typeof localClear !== "undefined"
+                ? `✅ Decrypted: ${localClear}`
+                : isDecrypting
                 ? "⏳ Decrypting..."
-                : "❌ Nothing to decrypt"}
-        </button>
+                : "🔓 Decrypt Counter"}
+            </button>
+          )}
+        />
 
         <button
           className={secondaryButtonClass}
