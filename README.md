@@ -1,19 +1,35 @@
-# FHEVM React Template
+# Privacy-Preserving Genome Analysis (Phase 1)
 
-A minimal React frontend template for building FHEVM-enabled decentralized applications (dApps). This template provides a simple development interface for interacting with FHEVM smart contracts, specifically the `FHECounter.sol` contract.
+A decentralized application for privacy-preserving genome analysis using Fully Homomorphic Encryption (FHE). This application enables secure computation on encrypted genomic data without revealing the underlying genetic information, built on the FHEVM (Fully Homomorphic Encryption Virtual Machine).
+
+![screenshot](image.png)
+
+## 🧬 What is Privacy-Preserving Genome Analysis?
+
+This project demonstrates the first phase of a privacy-preserving genome analysis platform where:
+- **Genomic data remains encrypted during computation** - Analysis happens on encrypted DNA sequences
+- **Zero-knowledge results** - Obtain insights without exposing raw genetic information
+- **Blockchain transparency** - Immutable audit trail of all genome analysis operations
+- **User sovereignty** - Complete control over sensitive genetic data
+- **Decentralized privacy** - No trusted third party has access to unencrypted genomic data
+
+### Phase 1: Foundation
+The current implementation focuses on establishing the core infrastructure for encrypted genome data processing, demonstrating fundamental FHE operations on genomic sequences while maintaining complete privacy.
 
 ## 🚀 What is FHEVM?
 
-FHEVM (Fully Homomorphic Encryption Virtual Machine) enables computation on encrypted data directly on Ethereum. This template demonstrates how to build dApps that can perform computations while keeping data private.
+FHEVM (Fully Homomorphic Encryption Virtual Machine) enables computation on encrypted data directly on Ethereum. This application leverages FHEVM to perform genome analysis while keeping sensitive genetic data private and secure throughout the entire computation pipeline.
 
 ## ✨ Features
 
-- **🔐 FHEVM Integration**: Built-in support for fully homomorphic encryption
-- **⚛️ React + Next.js**: Modern, performant frontend framework
+- **🔐 FHEVM Integration**: Built-in support for fully homomorphic encryption of genomic data
+- **🧬 Privacy-First Design**: All genetic information remains encrypted on-chain
+- **⚛️ React + Next.js**: Modern, performant frontend framework for genome analysis interface
 - **🎨 Tailwind CSS**: Utility-first styling for rapid UI development
 - **🔗 RainbowKit**: Seamless wallet connection and management
 - **🌐 Multi-Network Support**: Works on both Sepolia testnet and local Hardhat node
 - **📦 Monorepo Structure**: Organized packages for SDK, contracts, and frontend
+- **🔬 Genome Analysis Tools**: Initial set of privacy-preserving genetic computation primitives
 
 ## 🧰 Scripts overview
 
@@ -97,77 +113,71 @@ pnpm start
 
 - If contracts are not found, make sure submodules are initialized with  
   `git submodule update --init --recursive` and that you have run `pnpm install`.
-- If the frontend shows network or RPC errors, double-check that `MNEMONIC`
-  and `INFURA_API_KEY` are correctly set in your Hardhat environment.
-- If the app builds but cannot read contract state, verify that
-  `NEXT_PUBLIC_ALCHEMY_API_KEY` and `packages/nextjs/contracts/deployedContracts.ts`
-  point to the right network and deployed addresses.
 
-### ⚠️ Sepolia Production note
 
-- In production, `NEXT_PUBLIC_ALCHEMY_API_KEY` must be set (see `packages/nextjs/scaffold.config.ts`). The app throws if missing.
-- Ensure `packages/nextjs/contracts/deployedContracts.ts` points to your live contract addresses.
-- Optional: set `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` for better WalletConnect reliability.
-- Optional: add per-chain RPCs via `rpcOverrides` in `packages/nextjs/scaffold.config.ts`.
+## 🔄 Managing Custom Contracts in Submodule
 
-## 🔧 Troubleshooting
+Since `packages/hardhat` is a git submodule pointing to the upstream [fhevm-hardhat-template](https://github.com/zama-ai/fhevm-hardhat-template), custom contracts need special handling to avoid being overwritten during submodule updates.
 
-### Common MetaMask + Hardhat Issues
+### Updating the Submodule
 
-When developing with MetaMask and Hardhat, you may encounter these common issues:
+When you need to update the hardhat submodule to get the latest changes from upstream:
 
-#### ❌ Nonce Mismatch Error
+```bash
+pnpm update-submodule
+```
 
-**Problem**: MetaMask tracks transaction nonces, but when you restart Hardhat, the node resets while MetaMask doesn't update its tracking.
+This script automatically:
+1. Backs up custom contracts (like [PRSCompute.sol](packages/hardhat/contracts/PRSCompute.sol)) from the submodule to [custom-contracts/](custom-contracts/)
+2. Updates the submodule to the latest version
+3. Restores custom contracts back to the submodule
+4. Updates the deployment script to include custom contracts
 
-**Solution**:
-1. Open MetaMask extension
-2. Select the Hardhat network
-3. Go to **Settings** → **Advanced**
-4. Click **"Clear Activity Tab"** (red button)
-5. This resets MetaMask's nonce tracking
+### Adding New Custom Contracts
 
-#### ❌ Cached View Function Results
+If you want to add a new custom contract:
 
-**Problem**: MetaMask caches smart contract view function results. After restarting Hardhat, you may see outdated data.
+1. Place your contract file in [custom-contracts/](custom-contracts/)
+2. Add the contract name to the `CUSTOM_CONTRACTS` array in [scripts/updateSubmodule.ts](scripts/updateSubmodule.ts)
+3. Run `pnpm update-submodule` to apply the changes
 
-**Solution**:
-1. **Restart your entire browser** (not just refresh the page)
-2. MetaMask's cache is stored in extension memory and requires a full browser restart to clear
-
-> 💡 **Pro Tip**: Always restart your browser after restarting Hardhat to avoid cache issues.
-
-For more details, see the [MetaMask development guide](https://docs.metamask.io/wallet/how-to/run-devnet/).
+See [custom-contracts/README.md](custom-contracts/README.md) for more details.
 
 ## 📁 Project Structure
 
-This template uses a monorepo structure with three main packages:
+This application uses a monorepo structure with three main packages:
 
 ```
-fhevm-react-template/
+privacy-preserving-genome-analysis/
 ├── packages/
-│   ├── fhevm-hardhat-template/    # Smart contracts & deployment
+│   ├── fhevm-hardhat-template/    # Smart contracts for genome analysis
 │   ├── fhevm-sdk/                 # FHEVM SDK package
-│   └── nextjs/                      # React frontend application
-└── scripts/                       # Build and deployment scripts
+│   └── nextjs/                    # React frontend for genome interface
+├── scripts/                       # Build and deployment scripts
+└── custom-contracts/              # Custom genome analysis contracts
 ```
 
 ### Key Components
 
-#### 🔗 FHEVM Integration (`packages/nextjs/hooks/fhecounter-example/`)
-- **`useFHECounterWagmi.tsx`**: Example hook demonstrating FHEVM contract interaction
+#### 🧬 Genome Analysis Contracts (`custom-contracts/`)
+- Smart contracts implementing privacy-preserving genome computation
+- FHE-based genetic data processing operations
+- Secure on-chain storage of encrypted genomic information
+
+#### 🔗 FHEVM Integration (`packages/nextjs/hooks/`)
+- Custom hooks for encrypted genome data interaction
 - Essential hooks for FHEVM-enabled smart contract communication
-- Easily copyable to any FHEVM + React project
+- Privacy-preserving data submission and retrieval
 
 #### 🎣 Wallet Management (`packages/nextjs/hooks/helper/`)
-- MetaMask wallet provider hooks
+- MetaMask wallet provider hooks for user identity
 - Compatible with EIP-6963 standard
-- Easily adaptable for other wallet providers
+- Secure wallet integration for genome data ownership
 
 #### 🔧 Flexibility
-- Replace `ethers.js` with `Wagmi` or other React-friendly libraries
-- Modular architecture for easy customization
-- Support for multiple wallet providers
+- Modular architecture for adding new genome analysis features
+- Extensible contract structure for Phase 2 and beyond
+- Support for multiple wallet providers and privacy-enhancing technologies
 
 ## 📚 Additional Resources
 
@@ -181,9 +191,10 @@ fhevm-react-template/
 - [MetaMask + Hardhat Setup](https://docs.metamask.io/wallet/how-to/run-devnet/) - Local development
 - [React Documentation](https://reactjs.org/) - React framework guide
 
-### Community & Support
-- [FHEVM Discord](https://discord.com/invite/zama) - Community support
-- [GitHub Issues](https://github.com/zama-ai/fhevm-react-template/issues) - Bug reports & feature requests
+### Genomic Privacy & Research
+- [Genome Privacy Research](https://genomeprivacy.org/) - Privacy-preserving genomics
+- [FHEVM Discord](https://discord.com/invite/zama) - Technical support for FHE implementation
+- [GitHub Issues](#) - Bug reports & feature requests for this project
 
 ## 📄 License
 
