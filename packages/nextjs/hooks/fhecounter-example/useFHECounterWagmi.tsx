@@ -62,7 +62,7 @@ export const useFHECounterWagmi = (parameters: {
     if (!providerOrSigner) return undefined;
     return new ethers.Contract(
       fheCounter!.address,
-      (fheCounter as FHECounterInfo).abi,
+      (fheCounter as FHECounterInfo).abi as any,
       providerOrSigner,
     );
   };
