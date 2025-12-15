@@ -33,15 +33,20 @@ FHEVM (Fully Homomorphic Encryption Virtual Machine) enables computation on encr
 
 ## 🧰 Scripts overview
 
-| Script                   | What it does                                                   |
-| ------------------------ | -------------------------------------------------------------- |
-| `pnpm dev`              | Starts the frontend dev server for the React template.        |
-| `pnpm test`             | Runs the frontend tests in watch mode.                        |
-| `pnpm lint`             | Lints the project using the configured ESLint rules.          |
-| `pnpm build`            | Builds the production bundle for deployment.                  |
-| `pnpm preview`          | Serves the built app locally to verify the production build.  |
+| Script | What it does |
+| ------ | ------------- |
+| `pnpm start` | Starts the Next.js dev server (frontend) |
+| `pnpm chain` | Starts the local Hardhat node (RPC http://127.0.0.1:8545) |
+| `pnpm deploy:localhost` | Deploys contracts to localhost and generates TypeScript ABIs |
+| `pnpm deploy:sepolia` | Deploys contracts to Sepolia and generates TypeScript ABIs |
+| `pnpm next:build` | Builds the frontend for production |
+| `pnpm test` | Runs Hardhat tests |
+| `pnpm lint` | Lints Next.js and Hardhat packages |
+| `pnpm format` | Formats code in Next.js and Hardhat packages |
+| `pnpm update-submodule` | Updates the Hardhat submodule and restores custom contracts |
+| `pnpm sdk:build` | Builds the local FHEVM SDK package |
 
-## 📋 Prerequinextjss
+## 📋 Prerequisites
 
 Before you begin, ensure you have:
 
@@ -111,9 +116,48 @@ pnpm start
 
 ### ⚠️ Common pitfalls
 
-- If contracts are not found, make sure submodules are initialized with  
+- If contracts are not found, make sure submodules are initialized with
   `git submodule update --init --recursive` and that you have run `pnpm install`.
 
+## 🎮 Demo Flow
+
+This demo showcases a privacy-preserving Polygenic Risk Score (PRS) computation using Fully Homomorphic Encryption (FHE).
+
+### How It Works
+
+1. Connect your wallet
+   - Click "Connect Wallet" to link MetaMask
+   - Your address is used as your identity
+
+2. Enter Individual ID
+   - Provide an identifier (e.g., email); it's hashed on-chain
+
+3. Provide 20 SNP genotypes (0, 1, or 2)
+   - Type values manually, use the quick-fill buttons, or upload a CSV/JSON file
+
+4. Encrypt + Upload Genotype
+   - The app encrypts your SNPs client-side and submits external ciphertexts
+   - The contract stores encrypted SNPs (euint32); plaintext never leaves your device
+
+5. Compute PRS on-chain
+   - The contract computes an encrypted weighted sum using built-in effect sizes and a risk threshold
+   - It stores:
+     - Encrypted PRS score (euint32)
+     - Encrypted classification (ebool: high/low risk)
+
+6. Decrypt risk classification
+   - Request decryption for the classification only
+   - You learn whether the PRS crosses the threshold; the numeric PRS remains encrypted
+
+7. Optional: Refresh status
+   - Check whether risk has been computed and view the on-chain risk handle
+
+### Why PRS with FHE?
+
+- Encrypted inputs: your genotype remains private
+- Secure computation: on-chain PRS computed over ciphertexts
+- Privacy-preserving results: only the classification is revealed
+- Extensible: the same primitives generalize to richer genomic analyses
 
 ## 🔄 Managing Custom Contracts in Submodule
 
@@ -148,53 +192,14 @@ See [custom-contracts/README.md](custom-contracts/README.md) for more details.
 This application uses a monorepo structure with three main packages:
 
 ```
-privacy-preserving-genome-analysis/
+fhevm-hardhat-template/
 ├── packages/
-│   ├── fhevm-hardhat-template/    # Smart contracts for genome analysis
+│   ├── hardhat/                  # Smart contracts for genome analysis
 │   ├── fhevm-sdk/                 # FHEVM SDK package
 │   └── nextjs/                    # React frontend for genome interface
 ├── scripts/                       # Build and deployment scripts
 └── custom-contracts/              # Custom genome analysis contracts
 ```
-
-### Key Components
-
-#### 🧬 Genome Analysis Contracts (`custom-contracts/`)
-- Smart contracts implementing privacy-preserving genome computation
-- FHE-based genetic data processing operations
-- Secure on-chain storage of encrypted genomic information
-
-#### 🔗 FHEVM Integration (`packages/nextjs/hooks/`)
-- Custom hooks for encrypted genome data interaction
-- Essential hooks for FHEVM-enabled smart contract communication
-- Privacy-preserving data submission and retrieval
-
-#### 🎣 Wallet Management (`packages/nextjs/hooks/helper/`)
-- MetaMask wallet provider hooks for user identity
-- Compatible with EIP-6963 standard
-- Secure wallet integration for genome data ownership
-
-#### 🔧 Flexibility
-- Modular architecture for adding new genome analysis features
-- Extensible contract structure for Phase 2 and beyond
-- Support for multiple wallet providers and privacy-enhancing technologies
-
-## 📚 Additional Resources
-
-### Official Documentation
-- [FHEVM Documentation](https://docs.zama.ai/protocol/solidity-guides/) - Complete FHEVM guide
-- [FHEVM Hardhat Guide](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat) - Hardhat integration
-- [Relayer SDK Documentation](https://docs.zama.ai/protocol/relayer-sdk-guides/) - SDK reference
-- [Environment Setup](https://docs.zama.ai/protocol/solidity-guides/getting-started/setup#set-up-the-hardhat-configuration-variables-optional) - MNEMONIC & API keys
-
-### Development Tools
-- [MetaMask + Hardhat Setup](https://docs.metamask.io/wallet/how-to/run-devnet/) - Local development
-- [React Documentation](https://reactjs.org/) - React framework guide
-
-### Genomic Privacy & Research
-- [Genome Privacy Research](https://genomeprivacy.org/) - Privacy-preserving genomics
-- [FHEVM Discord](https://discord.com/invite/zama) - Technical support for FHE implementation
-- [GitHub Issues](#) - Bug reports & feature requests for this project
 
 ## 📄 License
 
