@@ -45,7 +45,7 @@ export const usePRSComputeWagmi = (parameters: {
     if (!hasContract) return undefined;
     const providerOrSigner = mode === "read" ? ethersReadonlyProvider : ethersSigner;
     if (!providerOrSigner) return undefined;
-    return new ethers.Contract(prsContract!.address, (prsContract as PRSInfo).abi, providerOrSigner);
+    return new ethers.Contract(prsContract!.address, (prsContract as PRSInfo).abi as any, providerOrSigner);
   };
 
   // Local UI state managed outside by component; but provide helpers
